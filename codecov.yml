@@ -1,0 +1,20 @@
+ignore:
+  - "inne/_version.py"
+  - "setup.py"
+  - "versioneer.py"
+
+coverage:
+  status:
+    project:
+      default:
+        target: auto
+        paths:
+          - "inne"
+        informational: true
+    patch:
+      default:
+        target: auto
+        paths:
+          - "inne"
+        informational: true
+
