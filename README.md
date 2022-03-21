@@ -40,7 +40,22 @@ python test_inne.py
 
 If you have used this codebase in a scientific publication and wish to cite it, please use the following publication (Bibtex format):
 
-@article{bandaragoda2018isolation, title={Isolation-based anomaly detection using nearest-neighbor ensembles}, author={Bandaragoda, Tharindu R and Ting, Kai Ming and Albrecht, David and Liu, Fei Tony and Zhu, Ye and Wells, Jonathan R}, journal={Computational Intelligence}, volume={34}, number={4}, pages={968--998}, year={2018}, publisher={Wiley Online Library} }
+@article{bandaragoda2018isolation,
+        title={Isolation-based anomaly detection using nearest-neighbor ensembles},
+        author={Bandaragoda, Tharindu R and Ting, Kai Ming and Albrecht, David and Liu, Fei Tony and Zhu, Ye and Wells, Jonathan R},
+        journal={Computational Intelligence},
+        volume={34},
+        number={4},
+        pages={968--998},
+        year={2018},
+        publisher={Wiley Online Library}}
+
+## How to Contribute
+
+We welcome contributions in any form! Assistance with documentation, particularly expanding tutorials, is always welcome. To contribute please fork the project make your changes and submit a pull request. We will do our best to work through any issues with you and get your code merged into the main branch.
+
+### Code
+### Documents
 
 
 ## License

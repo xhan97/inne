@@ -1,4 +1,4 @@
-# Copyright 2022 Xin Han. All rights reserved.
+# Copyright 2022. All rights reserved.
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
 
@@ -7,72 +7,17 @@
 #     Isolation-based anomaly detection using nearest-neighbor ensembles.
 #     In Computational Intelligence, vol. 34, 2018, pp. 968-998.
 
-from __future__ import division
+# from __future__ import division
 
 import random
+from matplotlib.pyplot import axis
 
 import numpy as np
 from scipy.spatial.distance import cdist
+from warnings import warn
 
 
-# Calculate Minkowski distance
-def pdist2(X, Y, k):
-    """
-        Parameters
-        ----------
-        X : np.array
-        Y : np.array
-        Returns
-        -------
-        D,I
-        D corresponds to the pairwise distance between samples, 
-        and I is the corresponding index
-    """
-
-    if k == 1:
-        ed = cdist(X, Y, 'euclidean').T
-        D = [row.min() for row in ed]
-        I = [row.argmin() for row in ed]
-    if k == 2:
-        D = np.zeros((2, len(X)))
-        I = np.zeros((2, len(X)))
-
-        ed = cdist(X, Y, 'euclidean').T
-        D[0, :Y.shape[0]] = [row.min() for row in ed]
-        I[0, :Y.shape[0]] = [row.argmin() for row in ed]
-        D[1, :Y.shape[0]] = [sorted(list(row))[1] for row in ed]
-        I[1, :Y.shape[0]] = [list(row).index(
-            sorted(list(row))[1]) for row in ed]
-
-    return D, I
-
-# Get index
-
-
-def get_index(Ndata, NCurtIndex, D, I):
-    """
-        Parameters
-        ----------
-        Ndata : np.array,
-        Selected data
-        NCurtIndex : list, 
-        Index of the selected data
-        D:Distance between samples
-        I:Index of samples
-        Returns
-        -------
-        index
-    """
-
-    NCurtIndex_I = np.zeros((2, len(Ndata)))
-    NCurtIndex_I = [[NCurtIndex[int(value)] for value in i] for i in I]
-    D_I = [D[1, int(i)] for i in I[1]]
-    index = np.vstack((NCurtIndex_I, D[1], np.array(D_I), 1-D_I/D[1]))
-
-    return index
-
-
-class iNNE():
+class INNE():
     """
     Parameters
     ----------
@@ -93,7 +38,7 @@ class iNNE():
 
     def __init__(self, t=100, psi=16, contamination=0.5, seed=None):
         self.t = t
-        self.psi = psi
+        self._psi = psi
         self.pdata = {}
         self.index = {}
         self.seed = seed
@@ -101,51 +46,55 @@ class iNNE():
         self.contamination = contamination
     # calculate abnormal score
 
-    def cigrid(self, data, psi):
-        """
-            Parameters
-            ----------
-            data : np.array,
-            Input data
-            psi : int 
-            Number of randomly selected samples
-            Returns
-            -------
-            index
-        """
-        if self.seed is not None:
-            self.seed = self.seed + 5
-            random.seed(self.seed)
-        Ndata = np.array([])
-        while Ndata.shape[0] < 2:
-            # sampling
-            CurtIndex = [random.randint(0, data.shape[0]-1)
-                         for _ in range(int(psi))]
-            #CurtIndex = list(range(round(data.shape[0]*0.2)))
-            Ndata = data[CurtIndex]
-            # filter out repeat
-            _, IA = np.unique(Ndata, axis=0, return_index=True)
-            NCurtIndex = [CurtIndex[i] for i in IA]
-            Ndata = data[NCurtIndex]
-        D, I = pdist2(Ndata, Ndata, 2)
-        index = get_index(Ndata, NCurtIndex, D, I)
-        return index
+    def _cigrid(self, X):
+        n = X.shape[0]
+        self._psi = min(self._psi, n)
+        center_index = np.random.choice(n, self._psi, replace=False)
+        center_data = X[center_index]
+        center_dist = cdist(center_data, center_data, 'euclidean')
+        np.fill_diagonal(center_dist, np.inf)
+        center_redius = np.amin(center_dist, axis=1)
+        conn_index = np.argmin(center_dist, axis=1)
+        conn_redius = center_redius[conn_index]
+        ratio = 1 - conn_redius / center_redius
+        return center_data, center_redius, conn_redius, ratio
 
-    def fit(self, train_data):
-        """
-        Fit estimator.
-
-        Parameters
-        ----------
-        traindata : {array}
-            The input samples.  
-        """
-        self.train_data = train_data
+    def fit(self, X):
+        self.train_data = X
         for i in range(self.t):
-            self.index[i] = self.cigrid(train_data, self.psi)
-            pindex = self.index[i][0, :]
-            self.pdata[i] = train_data[pindex.astype('int64')]
+            center_data, center_redius, conn_redius, ratio = self._cigrid(X)
+            if i == 0:
+                self._center_data_set = np.array([center_data])
+                self._center_redius_set = np.array([center_redius])
+                self._conn_redius_set = np.array([conn_redius])
+                self._ratio_set = np.array([ratio])
+            else:
+                self._center_data_set = np.append(
+                    self._center_data_set, np.array([center_data]), axis=0)
+                self._center_redius_set = np.append(
+                    self._center_redius_set, np.array([center_redius]), axis=0)
+                self._conn_redius_set = np.append(
+                    self._conn_redius_set, np.array([conn_redius]), axis=0)
+                self._ratio_set = np.append(
+                    self._ratio_set, np.array([ratio]), axis=0)
         return self
+
+    def decision_function(self, test_data):
+        for i in range(self.t):
+            # TODO: check dimension of test_data and train_data
+            x_dists = cdist(self._center_data_set[i], test_data)
+            nn_center_dist = np.amin(x_dists, axis=0)
+            nn_center_index = np.argmin(x_dists, axis=0)
+            Iso = self._ratio_set[i][nn_center_index]
+            Iso = np.where(nn_center_dist <
+                           self._center_redius_set[i][nn_center_index], Iso, 1)
+            if i == 0:
+                Iso_set = np.array([Iso])
+            else:
+                Iso_set = np.append(
+                    Iso_set, np.array([Iso]), axis=0)
+        Iscore = np.mean(Iso_set, axis=0)
+        return Iscore
 
     def predict(self, test_data):
         """
@@ -164,34 +113,32 @@ class iNNE():
         is_inlier[self.decision_function(test_data) > self.offset_] = -1
         return is_inlier
 
-    def decision_function(self, test_data):
-        """
-        Predict if a particular sample is an outlier or not.
-        Parameters
-        ----------
-        testdata : {array} 
-        The input samples.
-        Returns
-        -------
-        Abnormal scores
-        """
-        Iso = np.zeros((test_data.shape[0], self.t))
-
-        for i in range(self.t):
-            dist_index = self.index[i][2, :]
-            ratio_index = self.index[i][-1, :]
-            D, I = pdist2(self.pdata[i], test_data, 1)
-            Iso[:, i] = list(np.array(ratio_index).reshape(
-                len(ratio_index), 1)[I].T[0])
-            temp_D = [dist_index[j] for j in I]
-            distIndex_D = list(
-                map(lambda x: 0 if x[0]-x[1] > 0 else 1, zip(temp_D, D)))
-            Iso[:, i] = list(map(lambda x: 1 if distIndex_D[x]
-                             == 1 else Iso[x, i], range(len(distIndex_D))))
-        Iscore = np.sum(Iso, axis=1)/Iso.shape[1]
-
-        return Iscore
-
 
 if __name__ == '__main__':
-    pass
+    from sklearn.datasets import make_moons, make_blobs
+    import time
+
+    def generate_outlier_data(n_samples, outliers_fraction):
+        n_samples = n_samples
+        outliers_fraction = outliers_fraction
+        n_outliers = int(outliers_fraction * n_samples)
+        n_inliers = n_samples - n_outliers
+
+        datasets = 4.0 * (
+            make_moons(n_samples=n_samples, noise=0.05, random_state=0)[0]
+            - np.array([0.5, 0.25])
+        )
+
+        rng = np.random.RandomState(42)
+
+        X = np.concatenate([datasets, rng.uniform(
+            low=-6, high=6, size=(n_outliers, 2))], axis=0)
+        return X
+
+    X = generate_outlier_data(300, 0.15)
+
+    inne_model = INNE(t=200, psi=20)
+    st = time.time()
+    inne_model.fit(X).predict(X)
+    et = time.time()
+    print(et-st)
