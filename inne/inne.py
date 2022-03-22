@@ -13,15 +13,16 @@ from warnings import warn
 
 import numpy as np
 from scipy.spatial.distance import cdist
+from sklearn.base import BaseEstimator, OutlierMixin
+from sklearn.utils.validation import check_array, check_is_fitted
 
-
-class INNE():
+class IsolationNNE(OutlierMixin, BaseEstimator):
     """
     Parameters
     ----------
     t:int, default=100
     The number of base estimators in the ensemble.
-    psi:int,pow(2,n),n in range(1,11)
+    psi: int, pow(2,n), n in range(1,11)
     Random selection from training data psi sample points as subsample.
     contamination:float, default=0.5
         The amount of contamination of the data set, i.e. the proportion
@@ -34,34 +35,35 @@ class INNE():
 
     """
 
-    def __init__(self, t=100, psi=16, contamination=0.5, seed=None):
-        self.t = t
-        self._psi = psi
-        self.seed = seed
-        self.offset_ = 0.5
+    def __init__(self, n_estimators=100, psi=16, contamination="auto", random_state=None):
+        self.n_estimators = n_estimators
+        self.psi = psi
+        self.random_state = random_state
         self.contamination = contamination
 
-    def _cigrid(self, X):
-        n = X.shape[0]
-        self._psi = min(self._psi, n)
+    def fit(self, X, y=None):
+        """
+        Fit estimator.
 
-        if self.seed is not None:
-            self.seed = self.seed + 5
-            np.random.seed(self.seed)
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            The input samples. Use ``dtype=np.float32`` for maximum
+            efficiency.
 
-        center_index = np.random.choice(n, self._psi, replace=False)
-        center_data = X[center_index]
-        center_dist = cdist(center_data, center_data, 'euclidean')
-        np.fill_diagonal(center_dist, np.inf)
-        center_redius = np.amin(center_dist, axis=1)
-        conn_index = np.argmin(center_dist, axis=1)
-        conn_redius = center_redius[conn_index]
-        ratio = 1 - conn_redius / center_redius
-        return center_data, center_redius, conn_redius, ratio
+        y : Ignored
+            Not used, present for API consistency by convention.
 
-    def fit(self, X):
-        self.train_data = X
-        for i in range(self.t):
+        Returns
+        -------
+        self : object
+            Fitted estimator.
+        """
+
+        # Check data
+        X = check_array(X, accept_sparse=False)
+        
+        for i in range(self.n_estimators):
             center_data, center_redius, conn_redius, ratio = self._cigrid(X)
             if i == 0:
                 self._center_data_set = np.array([center_data])
@@ -77,26 +79,39 @@ class INNE():
                     self._conn_redius_set, np.array([conn_redius]), axis=0)
                 self._ratio_set = np.append(
                     self._ratio_set, np.array([ratio]), axis=0)
+        self.is_fitted_ = True
+        
+        if self.contamination == "auto":
+            # 0.5 plays a special role as described in the original paper.
+            # we take the opposite as we consider the opposite of their score.
+            self.offset_ = -0.5
+        else:
+            # else, define offset_ wrt contamination parameter
+            self.offset_ = np.percentile(
+                self.score_samples(X), 100.0 * self.contamination)
+        
         return self
 
-    def decision_function(self, test_data):
-        for i in range(self.t):
-            # TODO: check dimension of test_data and train_data
-            x_dists = cdist(self._center_data_set[i], test_data)
-            nn_center_dist = np.amin(x_dists, axis=0)
-            nn_center_index = np.argmin(x_dists, axis=0)
-            Iso = self._ratio_set[i][nn_center_index]
-            Iso = np.where(nn_center_dist <
-                           self._center_redius_set[i][nn_center_index], Iso, 1)
-            if i == 0:
-                Iso_set = np.array([Iso])
-            else:
-                Iso_set = np.append(
-                    Iso_set, np.array([Iso]), axis=0)
-        Iscore = np.mean(Iso_set, axis=0)
-        return Iscore
+    def _cigrid(self, X):
 
-    def predict(self, test_data):
+        n = X.shape[0]
+        self.psi = min(self.psi, n)
+
+        if self.random_state is not None:
+            self.random_state = self.random_state + 5
+            np.random.seed(self.random_state)
+
+        center_index = np.random.choice(n, self.psi, replace=False)
+        center_data = X[center_index]
+        center_dist = cdist(center_data, center_data, 'euclidean')
+        np.fill_diagonal(center_dist, np.inf)
+        center_redius = np.amin(center_dist, axis=1)
+        conn_index = np.argmin(center_dist, axis=1)
+        conn_redius = center_redius[conn_index]
+        ratio = 1 - conn_redius / center_redius
+        return center_data, center_redius, conn_redius, ratio
+
+    def predict(self, X):
         """
         Predict if a particular sample is an outlier or not.
         Parameters
@@ -107,11 +122,61 @@ class INNE():
         -------
         Abnormal scores
         """
-        self.offset_ = np.percentile(self.decision_function(
-            self.train_data), 100.0 * (1-self.contamination))
-        is_inlier = np.ones(test_data.shape[0], dtype=int)
-        is_inlier[self.decision_function(test_data) > self.offset_] = -1
+        check_is_fitted(self)
+        decision_func = self.decision_function(X)
+        is_inlier = np.ones_like(decision_func, dtype=int)
+        # TODO:check the condition.
+        is_inlier[decision_func < 0] = -1
         return is_inlier
+
+    def decision_function(self, X):
+        """
+        Average anomaly score of X of the base classifiers.
+
+        The anomaly score of an input sample is computed as
+        the mean anomaly score of the .
+
+        Parameters
+        ----------
+        X : {array-like, sparse matrix} of shape (n_samples, n_features)
+            The input samples. Internally, it will be converted to
+            ``dtype=np.float32`` and if a sparse matrix is provided
+            to a sparse ``csr_matrix``.
+
+        Returns
+        -------
+        scores : ndarray of shape (n_samples,)
+            The anomaly score of the input samples.
+            The lower, the more abnormal. Negative scores represent outliers,
+            positive scores represent inliers.
+        """
+        # We subtract self.offset_ to make 0 be the threshold value for being
+        # an outlier.
+
+        return self.score_samples(X) - self.offset_
+
+    def score_samples(self, X):
+
+        check_is_fitted(self, 'is_fitted_')
+
+        # check data
+        X = check_array(X, accept_sparse=False)
+
+        for i in range(self.n_estimators):
+            x_dists = cdist(self._center_data_set[i], X, 'euclidean')
+            nn_center_dist = np.amin(x_dists, axis=0)
+            nn_center_index = np.argmin(x_dists, axis=0)
+            score = self._ratio_set[i][nn_center_index]
+            score = np.where(nn_center_dist <
+                             self._center_redius_set[i][nn_center_index], score, 1)
+            if i == 0:
+                score_set = np.array([score])
+            else:
+                score_set = np.append(
+                    score_set, np.array([score]), axis=0)
+        scores = np.mean(score_set, axis=0)
+
+        return -scores
 
 
 if __name__ == '__main__':
@@ -135,8 +200,8 @@ if __name__ == '__main__':
 
     X = generate_outlier_data(300, 0.15)
 
-    inne_model = INNE(t=200, psi=20)
+    inne_model = IsolationNNE(n_estimators=200, psi=20)
     st = time.time()
-    inne_model.fit(X).predict(X)
+    pred = inne_model.fit(X).predict(X)
     et = time.time()
     print(et-st)
