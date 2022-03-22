@@ -9,12 +9,10 @@
 
 # from __future__ import division
 
-import random
-from matplotlib.pyplot import axis
+from warnings import warn
 
 import numpy as np
 from scipy.spatial.distance import cdist
-from warnings import warn
 
 
 class INNE():
@@ -39,16 +37,18 @@ class INNE():
     def __init__(self, t=100, psi=16, contamination=0.5, seed=None):
         self.t = t
         self._psi = psi
-        self.pdata = {}
-        self.index = {}
         self.seed = seed
         self.offset_ = 0.5
         self.contamination = contamination
-    # calculate abnormal score
 
     def _cigrid(self, X):
         n = X.shape[0]
         self._psi = min(self._psi, n)
+
+        if self.seed is not None:
+            self.seed = self.seed + 5
+            np.random.seed(self.seed)
+
         center_index = np.random.choice(n, self._psi, replace=False)
         center_data = X[center_index]
         center_dist = cdist(center_data, center_data, 'euclidean')
@@ -115,15 +115,13 @@ class INNE():
 
 
 if __name__ == '__main__':
-    from sklearn.datasets import make_moons, make_blobs
     import time
+    from sklearn.datasets import make_moons
 
     def generate_outlier_data(n_samples, outliers_fraction):
         n_samples = n_samples
         outliers_fraction = outliers_fraction
         n_outliers = int(outliers_fraction * n_samples)
-        n_inliers = n_samples - n_outliers
-
         datasets = 4.0 * (
             make_moons(n_samples=n_samples, noise=0.05, random_state=0)[0]
             - np.array([0.5, 0.25])

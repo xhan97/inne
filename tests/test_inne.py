@@ -31,7 +31,7 @@ X = generate_outlier_data(300, 0.15)
 
 def test_inne_fit():
     """placeholder test"""
-    inne_model = INNE(t=200, psi=20)
+    inne_model = INNE(t=200, psi=20, seed=5)
     st = time.time()
     inne_model.fit(X).predict(X)
     et = time.time()
