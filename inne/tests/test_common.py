@@ -2,7 +2,7 @@ import pytest
 
 from sklearn.utils.estimator_checks import check_estimator
 
-from inne.inne import IsolationNNE
+from inne import IsolationNNE
 
 
 @pytest.mark.parametrize(

@@ -1,2 +1,3 @@
-versioneer
-wheel
+numpy
+scipy
+scikit-learn

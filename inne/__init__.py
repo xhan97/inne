@@ -1,6 +1,5 @@
-"""Top-level package for inne."""
-# from . import _version
-# import sys
+from ._inne import IsolationNNE
 
+from ._version import __version__
 
-# __version__ = _version.get_versions()['version']
+__all__ = [IsolationNNE,'__version__']

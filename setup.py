@@ -1,51 +1,63 @@
-#!/usr/bin/env python
+#! /usr/bin/env python
+"""A template for scikit-learn compatible packages."""
 
-"""The setup script."""
-from os import path
-from setuptools import setup, find_packages
-import sys
-import versioneer
+import codecs
+import os
 
-here = path.abspath(path.dirname(__file__))
+from setuptools import find_packages, setup
 
-with open(path.join(here, 'README.md'), encoding='utf-8') as readme_file:
-    readme = readme_file.read()
+# get __version__ from _version.py
+ver_file = os.path.join('inne', '_version.py')
+with open(ver_file) as f:
+    exec(f.read())
 
-with open(path.join(here, 'requirements.txt')) as requirements_file:
-    # Parse requirements.txt, ignoring any commented-out lines.
-    requirements = [line for line in requirements_file.read().splitlines()
-                    if not line.startswith('#')]
+DISTNAME = 'inne'
+DESCRIPTION = 'A Isolation based anomaly detection algorithms.'
+with codecs.open('README.rst', encoding='utf-8-sig') as f:
+    LONG_DESCRIPTION = f.read()
+MAINTAINER = 'Xin Han'
+MAINTAINER_EMAIL = 'xhan@blab.com'
+URL = 'https://github.com/xhan97/inne'
+LICENSE = 'new BSD'
+DOWNLOAD_URL = 'https://github.com/xhan97/inne'
+VERSION = __version__
+INSTALL_REQUIRES = ['numpy', 'scipy', 'scikit-learn']
+CLASSIFIERS = ['Intended Audience :: Science/Research',
+               'Intended Audience :: Developers',
+               'License :: OSI Approved',
+               'Programming Language :: Python',
+               'Topic :: Software Development',
+               'Topic :: Scientific/Engineering',
+               'Operating System :: Microsoft :: Windows',
+               'Operating System :: POSIX',
+               'Operating System :: Unix',
+               'Operating System :: MacOS',
+               'Programming Language :: Python :: 3']
+EXTRAS_REQUIRE = {
+    'tests': [
+        'pytest',
+        'pytest-cov'],
+    'docs': [
+        'sphinx',
+        'sphinx-gallery',
+        'sphinx_rtd_theme',
+        'numpydoc',
+        'matplotlib'
+    ]
+}
 
-setup(
-    author="INNE",
-    author_email='xhan@tulip.academy',
-    python_requires='>=3.8',
-    classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
-        'Natural Language :: English',
-        'Programming Language :: Python :: 3',
-    ],
-    description="A Isolation based anomaly detection algorithms.",
-    entry_points={
-        'console_scripts': [
-            #'inne=inne:some_function',
-        ],
-    },
-    install_requires=requirements,
-    license="BSD license",
-    long_description=readme,
-    long_description_content_type='text/markdown',
-    include_package_data=True,
-    keywords='inne',
-    name='inne',
-    packages=find_packages(include=['inne', 'inne.*']),
-    test_suite='tests',
-    url='https://github.com/xhan97/inne',
-    version=versioneer.get_version(),
-    cmdclass=versioneer.get_cmdclass(),
-    zip_safe=False,
-    extras_require={
-        'tests': ['pytest', 'codecov', 'pytest-cov'],
-        'docs': ['sphinx', 'sphinx-rtd-theme', 'myst-parser', 'myst-nb', 'sphinx-panels', 'autodocs']
-    }
-)
+setup(name=DISTNAME,
+      maintainer=MAINTAINER,
+      maintainer_email=MAINTAINER_EMAIL,
+      description=DESCRIPTION,
+      license=LICENSE,
+      url=URL,
+      version=VERSION,
+      download_url=DOWNLOAD_URL,
+      long_description=LONG_DESCRIPTION,
+      zip_safe=False,  # the package can run out of an .egg file
+      python_requires='>=3.5',
+      classifiers=CLASSIFIERS,
+      packages=find_packages(),
+      install_requires=INSTALL_REQUIRES,
+      extras_require=EXTRAS_REQUIRE)

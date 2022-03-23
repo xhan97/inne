@@ -5,7 +5,7 @@ import time
 
 import numpy as np
 import pytest
-from inne.inne import IsolationNNE
+from inne import IsolationNNE
 from numpy.testing import assert_allclose, assert_array_equal
 from sklearn.datasets import load_iris, make_blobs, make_moons
 
