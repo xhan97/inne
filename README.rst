@@ -45,7 +45,7 @@ Abstract of the paper:
     overcome these weaknesses, this paper shows that an alternative
     isolation mechanism is required and thus presents iNNE or isolation
     using Nearest Neighbor Ensemble. Although relying on nearest neighbors,
-    iNNE runs significantly faster than the existing nearest neighbor–based
+    iNNE runs significantly faster than the existing nearest neighbor-based
     methods such as the local outlier factor, especially in data sets having
     thousands of dimensions or millions of instances. This is because the
     proposed method has linear time complexity and constant space
@@ -99,7 +99,7 @@ supports input in a variety of formats: an array (or pandas dataframe) of shape 
 
     data, _ = make_blobs(1000)
 
-    clf = IsolationNN().fit(data)
+    clf = IsolationNNE().fit(data)
     anomaly_labels = clf.predict(data)
 
 -----------------
