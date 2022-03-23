@@ -2,18 +2,18 @@ name: inne CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ master ]
     tags:
       - '[0-9]+.[0-9]+.[0-9]+'
   pull_request:
-    branches: [ main ]
+    branches: [ master ]
 
 jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [ '3.8', '3.9' ]
+        python-version: ['3.6' ,'3.8', '3.9', '3.10' ]
 
     steps:
       - uses: actions/checkout@v2
@@ -25,11 +25,12 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install -r requirements.txt
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
           pip install -e .[tests]
 
       - name: Run tests
-        run: pytest tests --cov=./ --cov-report=xml
+        run: pytest  inne/tests --cov=./ --cov-report=xml
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2

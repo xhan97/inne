@@ -2,63 +2,59 @@
 
 |Travis|_ |AppVeyor|_ |Codecov|_ |CircleCI|_ |ReadTheDocs|_
 
-.. |Travis| image:: https://travis-ci.org/scikit-learn-contrib/project-template.svg?branch=master
-.. _Travis: https://travis-ci.org/scikit-learn-contrib/project-template
+.. |Travis| image:: https://travis-ci.org/xhan97/inne.svg?branch=master
+.. _Travis: https://travis-ci.org/xhan97/inne
 
 .. |AppVeyor| image:: https://ci.appveyor.com/api/projects/status/coy2qqaqr1rnnt5y/branch/master?svg=true
-.. _AppVeyor: https://ci.appveyor.com/project/glemaitre/project-template
+.. _AppVeyor: https://ci.appveyor.com/xhan97/inne
 
-.. |Codecov| image:: https://codecov.io/gh/scikit-learn-contrib/project-template/branch/master/graph/badge.svg
-.. _Codecov: https://codecov.io/gh/scikit-learn-contrib/project-template
+.. |Codecov| image:: https://codecov.io/gh/xhan97/inne/branch/master/graph/badge.svg
+.. _Codecov: https://codecov.io/gh/xhan97/inne
 
-.. |CircleCI| image:: https://circleci.com/gh/scikit-learn-contrib/project-template.svg?style=shield&circle-token=:circle-token
+.. |CircleCI| image:: https://circleci.com/gh/xhan97/inne.svg?style=shield&circle-token=:circle-token
 .. _CircleCI: https://circleci.com/gh/scikit-learn-contrib/project-template/tree/master
 
 .. |ReadTheDocs| image:: https://readthedocs.org/projects/inne/badge/?version=latest
 .. _ReadTheDocs: https://inne.readthedocs.io/en/latest/?badge=latest
 
 iNNE
-=============================================================================================
+======================================================================
 
-iNNE - Isolation‐based anomaly detection using nearest‐neighbor
-ensembles.
+iNNE - Isolation-based anomaly detection using nearest-neighbor ensembles.
 
 Based on the paper:
 
-Tharindu R., et al. “`Isolation‐based anomaly detection using
-nearest‐neighbor
-ensembles <https://onlinelibrary.wiley.com/doi/abs/10.1111/coin.12156>`__”
-Computational Intelligence (2018)
+    Tharindu R., et al. `Isolation-based anomaly detection using nearest-neighbor ensembles. <https://onlinelibrary.wiley.com/doi/abs/10.1111/coin.12156>`__ Computational Intelligence (2018)
 
-Matlab code of iNNE: https://github.com/zhuye88/iNNE
+Matlab code of iNNE:
 
-Introduction to the paper: https://www.jianshu.com/p/379a5898beb6
+    https://github.com/zhuye88/iNNE
+
+Introduction to the paper:
+
+    https://www.jianshu.com/p/379a5898beb6
 
 Abstract of the paper:
 
-The first successful isolation‐based anomaly detector, ie, iForest, uses
-trees as a means to perform isolation. Although it has been shown to
-have advantages over existing anomaly detectors, we have identified 4
-weaknesses, ie, its inability to detect local anomalies, anomalies with
-a high percentage of irrelevant attributes, anomalies that are masked by
-axis‐parallel clusters, and anomalies in multimodal data sets. To
-overcome these weaknesses, this paper shows that an alternative
-isolation mechanism is required and thus presents iNNE or isolation
-using Nearest Neighbor Ensemble. Although relying on nearest neighbors,
-iNNE runs significantly faster than the existing nearest neighbor–based
-methods such as the local outlier factor, especially in data sets having
-thousands of dimensions or millions of instances. This is because the
-proposed method has linear time complexity and constant space
-complexity.
+    The first successful isolation-based anomaly detector, ie, iForest, uses
+    trees as a means to perform isolation. Although it has been shown to
+    have advantages over existing anomaly detectors, we have identified 4
+    weaknesses, ie, its inability to detect local anomalies, anomalies with
+    a high percentage of irrelevant attributes, anomalies that are masked by
+    axis-parallel clusters, and anomalies in multimodal data sets. To
+    overcome these weaknesses, this paper shows that an alternative
+    isolation mechanism is required and thus presents iNNE or isolation
+    using Nearest Neighbor Ensemble. Although relying on nearest neighbors,
+    iNNE runs significantly faster than the existing nearest neighbor-based
+    methods such as the local outlier factor, especially in data sets having
+    thousands of dimensions or millions of instances. This is because the
+    proposed method has linear time complexity and constant space
+    complexity.
 
 Documentation, including tutorials, are available on ReadTheDocs at
 https://inne.readthedocs.io.
 
-Features
---------
-
--  TODO
-
+----------
 Installing
 ----------
 
@@ -68,25 +64,87 @@ PyPI install, presuming you have an up to date pip:
 
    pip install inne
 
+For a manual install of the latest code directly from GitHub:
+
+.. code:: bash
+
+  pip install git+https://github.com/xhan97/inne.git
+
+
+Alternatively download the package, install requirements, and manually run the installer:
+
+.. code:: bash
+
+    wget https://codeload.github.com/xhan97/inne/zip/refs/heads/master
+    unzip inne-master.zip
+    rm inne-master.zip
+    cd inne-master
+
+    pip install -r requirements.txt
+
+    python setup.py install
+
+------------------
+How to use iNNE
+------------------
+
+The inne package inherits from sklearn classes, and thus drops in neatly
+next to other sklearn  with an identical calling API. Similarly it
+supports input in a variety of formats: an array (or pandas dataframe) of shape ``(num_samples x num_features)``.
+
+.. code:: python
+
+    from inne import IsolationNNE
+    from sklearn.datasets import make_blobs
+
+    data, _ = make_blobs(1000)
+
+    clf = IsolationNNE().fit(data)
+    anomaly_labels = clf.predict(data)
+
+-----------------
 Running the Tests
 -----------------
 
-::
+The package tests can be run after installation using the command:
 
-   python test_inne.py
+.. code:: bash
 
+    nosetests -s inne
+
+or, if ``nose`` is installed but ``nosetests`` is not in your ``PATH`` variable:
+
+.. code:: bash
+
+    python -m nose -s inne
+
+If one or more of the tests fail, please report a bug at https://github.com/xhan97/inne/issues
+
+--------------
+Python Version
+--------------
+
+Python 3  is recommend  the better option if it is available to you.
+
+
+------
 Citing
 ------
 
 If you have used this codebase in a scientific publication and wish to
 cite it, please use the following publication (Bibtex format):
 
-@article{bandaragoda2018isolation, title={Isolation-based anomaly
-detection using nearest-neighbor ensembles}, author={Bandaragoda,
-Tharindu R and Ting, Kai Ming and Albrecht, David and Liu, Fei Tony and
-Zhu, Ye and Wells, Jonathan R}, journal={Computational Intelligence},
-volume={34}, number={4}, pages={968–998}, year={2018}, publisher={Wiley
-Online Library} }
+.. code:: bibtex
+
+    @article{bandaragoda2018isolation,
+            title={Isolation-based anomaly detection using nearest-neighbor ensembles},
+            author={Bandaragoda, Tharindu R and Ting, Kai Ming and Albrecht, David and Liu, Fei Tony and Zhu, Ye and Wells, Jonathan R},
+            journal={Computational Intelligence},
+            volume={34},
+            number={4},
+            pages={968-998},
+            year={2018},
+            publisher={Wiley Online Library} }
 
 License
 -------
