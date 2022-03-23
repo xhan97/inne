@@ -38,6 +38,13 @@ class IsolationNNE(OutlierMixin, BaseEstimator):
             - If 'auto', the threshold is determined as in the original paper.
             - If float, the contamination should be in the range (0, 0.5].
 
+    random_state : int, RandomState instance or None, default=None
+        Controls the pseudo-randomness of the selection of the feature
+        and split values for each branching step and each tree in the forest.
+
+        Pass an int for reproducible results across multiple function calls.
+        See :term:`Glossary <random_state>`.
+
     References
     ----------
     .. [1] T. R. Bandaragoda, K. Ming Ting, D. Albrecht, F. T. Liu, Y. Zhu, and J. R. Wells. 
@@ -114,6 +121,9 @@ class IsolationNNE(OutlierMixin, BaseEstimator):
 
         self.psi = psi
 
+        if isinstance(self.random_state, numbers.Integral):
+            self._seed = self.random_state
+
         for i in range(self.n_estimators):
             center_data, center_redius, conn_redius, ratio = self._cigrid(X)
             if i == 0:
@@ -132,6 +142,12 @@ class IsolationNNE(OutlierMixin, BaseEstimator):
                     self._ratio_set, np.array([ratio]), axis=0)
         self.is_fitted_ = True
 
+        if self.contamination != "auto":
+            if not (0.0 < self.contamination <= 0.5):
+                raise ValueError(
+                    "contamination must be in (0, 0.5], got: %f" % self.contamination
+                )
+
         if self.contamination == "auto":
             # 0.5 plays a special role as described in the original paper.
             # we take the opposite as we consider the opposite of their score.
@@ -147,9 +163,9 @@ class IsolationNNE(OutlierMixin, BaseEstimator):
 
         n = X.shape[0]
 
-        if self.random_state is not None:
-            self.random_state = self.random_state + 5
-            np.random.seed(self.random_state)
+        if isinstance(self.random_state, numbers.Integral):
+            self._seed = self._seed + 5
+            np.random.seed(self._seed)
 
         center_index = np.random.choice(n, self.psi, replace=False)
         center_data = X[center_index]
