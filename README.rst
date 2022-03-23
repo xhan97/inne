@@ -17,22 +17,78 @@
 .. |ReadTheDocs| image:: https://readthedocs.org/projects/inne/badge/?version=latest
 .. _ReadTheDocs: https://inne.readthedocs.io/en/latest/?badge=latest
 
-project-template - A template for scikit-learn contributions
-============================================================
+iNNE
+=============================================================================================
 
-.. _scikit-learn: https://scikit-learn.org
+iNNE - Isolation‐based anomaly detection using nearest‐neighbor
+ensembles.
 
-**project-template** is a template project for scikit-learn_ compatible
-extensions.
+Based on the paper:
 
-It aids development of estimators that can be used in scikit-learn pipelines
-and (hyper)parameter search, while facilitating testing (including some API
-compliance), documentation, open source development, packaging, and continuous
-integration.
+Tharindu R., et al. “`Isolation‐based anomaly detection using
+nearest‐neighbor
+ensembles <https://onlinelibrary.wiley.com/doi/abs/10.1111/coin.12156>`__”
+Computational Intelligence (2018)
 
-.. _documentation: https://inne.readthedocs.io/en/latest/quick_start.html
+Matlab code of iNNE: https://github.com/zhuye88/iNNE
 
-Refer to the documentation_ to modify the template for your own scikit-learn
-contribution.
+Introduction to the paper: https://www.jianshu.com/p/379a5898beb6
 
-*Thank you for cleanly contributing to the scikit-learn ecosystem!*
+Abstract of the paper:
+
+The first successful isolation‐based anomaly detector, ie, iForest, uses
+trees as a means to perform isolation. Although it has been shown to
+have advantages over existing anomaly detectors, we have identified 4
+weaknesses, ie, its inability to detect local anomalies, anomalies with
+a high percentage of irrelevant attributes, anomalies that are masked by
+axis‐parallel clusters, and anomalies in multimodal data sets. To
+overcome these weaknesses, this paper shows that an alternative
+isolation mechanism is required and thus presents iNNE or isolation
+using Nearest Neighbor Ensemble. Although relying on nearest neighbors,
+iNNE runs significantly faster than the existing nearest neighbor–based
+methods such as the local outlier factor, especially in data sets having
+thousands of dimensions or millions of instances. This is because the
+proposed method has linear time complexity and constant space
+complexity.
+
+Documentation, including tutorials, are available on ReadTheDocs at
+https://inne.readthedocs.io.
+
+Features
+--------
+
+-  TODO
+
+Installing
+----------
+
+PyPI install, presuming you have an up to date pip:
+
+.. code:: bash
+
+   pip install inne
+
+Running the Tests
+-----------------
+
+::
+
+   python test_inne.py
+
+Citing
+------
+
+If you have used this codebase in a scientific publication and wish to
+cite it, please use the following publication (Bibtex format):
+
+@article{bandaragoda2018isolation, title={Isolation-based anomaly
+detection using nearest-neighbor ensembles}, author={Bandaragoda,
+Tharindu R and Ting, Kai Ming and Albrecht, David and Liu, Fei Tony and
+Zhu, Ye and Wells, Jonathan R}, journal={Computational Intelligence},
+volume={34}, number={4}, pages={968–998}, year={2018}, publisher={Wiley
+Online Library} }
+
+License
+-------
+
+BSD license
