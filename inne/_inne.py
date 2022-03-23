@@ -20,7 +20,7 @@ class IsolationNNE(OutlierMixin, BaseEstimator):
 
     Parameters
     ----------
-    n_estimators : int, default=100
+    n_estimators : int, default=200
         The number of base estimators in the ensemble.
 
     psi : int, default="auto"
@@ -28,7 +28,7 @@ class IsolationNNE(OutlierMixin, BaseEstimator):
 
             - If int, then draw `psi` samples.
             - If float, then draw `psi` * X.shape[0]` samples.
-            - If "auto", then `psi=min(64, n_samples)`.
+            - If "auto", then `psi=min(16, n_samples)`.
 
     contamination: 'auto' or float, default='auto'
         The amount of contamination of the data set, i.e. the proportion
@@ -54,7 +54,7 @@ class IsolationNNE(OutlierMixin, BaseEstimator):
     array([ 1,  1, -1])
     """
 
-    def __init__(self, n_estimators=100, psi="auto", contamination="auto", random_state=None):
+    def __init__(self, n_estimators=200, psi="auto", contamination="auto", random_state=None):
         self.n_estimators = n_estimators
         self.psi = psi
         self.random_state = random_state
@@ -85,7 +85,7 @@ class IsolationNNE(OutlierMixin, BaseEstimator):
         n_samples = X.shape[0]
         if isinstance(self.psi, str):
             if self.psi == "auto":
-                psi = min(64, n_samples)
+                psi = min(16, n_samples)
             else:
                 raise ValueError(
                     "psi (%s) is not supported."
@@ -112,7 +112,7 @@ class IsolationNNE(OutlierMixin, BaseEstimator):
                 )
             psi = int(self.psi * X.shape[0])
 
-        self.psi_ = psi
+        self.psi = psi
 
         for i in range(self.n_estimators):
             center_data, center_redius, conn_redius, ratio = self._cigrid(X)
@@ -146,7 +146,6 @@ class IsolationNNE(OutlierMixin, BaseEstimator):
     def _cigrid(self, X):
 
         n = X.shape[0]
-        self.psi = min(self.psi, n)
 
         if self.random_state is not None:
             self.random_state = self.random_state + 5

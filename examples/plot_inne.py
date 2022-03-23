@@ -24,7 +24,7 @@ X_test = np.r_[X + 2, X - 2]
 X_outliers = rng.uniform(low=-4, high=4, size=(20, 2))
 
 # fit the model
-clf = IsolationNNE(psi=100)
+clf = IsolationNNE()
 clf.fit(X_train)
 y_pred_train = clf.predict(X_train)
 y_pred_test = clf.predict(X_test)

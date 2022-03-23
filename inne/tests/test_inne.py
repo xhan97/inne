@@ -86,7 +86,7 @@ def test_inne():
 #             assert_array_equal(sparse_results, dense_results)
 
 
-def test_iforest_performance():
+def test_inne_performance():
     """Test Isolation Forest performs well"""
 
     # Generate train/test data
