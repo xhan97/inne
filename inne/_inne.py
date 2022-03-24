@@ -1,5 +1,6 @@
-# Authors: Author 1 <author1@bba.a>
-#          Author 2 <author2@bba.a>
+# Authors: Xin Han <xinhan197@gmail.com>
+#          Xichen Tang <xichentang2021@163.com>
+#          Supported by Ye Zhu <ye.zhu@deakin.edu.au>
 # License: BSD 3 clause
 
 
@@ -13,29 +14,26 @@ from sklearn.utils.validation import check_array, check_is_fitted
 
 
 class IsolationNNE(OutlierMixin, BaseEstimator):
-    """ A template estimator to be used as a reference implementation.
-
-    For more information regarding how to build your own estimator, read more
-    in the :ref:`User Guide <user_guide>`.
+    """ Isolation-based anomaly detection using nearest-neighbor ensembles.
 
     Parameters
     ----------
     n_estimators : int, default=200
         The number of base estimators in the ensemble.
 
-    psi : int, default="auto"
+    max_samples : int, default="auto"
         The number of samples to draw from X to train each base estimator.
 
-            - If int, then draw `psi` samples.
-            - If float, then draw `psi` * X.shape[0]` samples.
-            - If "auto", then `psi=min(16, n_samples)`.
+            - If int, then draw `max_samples` samples.
+            - If float, then draw `max_samples` * X.shape[0]` samples.
+            - If "auto", then `max_samples=min(16, n_samples)`.
 
-    contamination: 'auto' or float, default='auto'
+    contamination : "auto" or float, default="auto"
         The amount of contamination of the data set, i.e. the proportion
         of outliers in the data set. Used when fitting to define the threshold
         on the scores of the samples.
 
-            - If 'auto', the threshold is determined as in the original paper.
+            - If "auto", the threshold is determined as in the original paper.
             - If float, the contamination should be in the range (0, 0.5].
 
     random_state : int, RandomState instance or None, default=None
@@ -55,15 +53,15 @@ class IsolationNNE(OutlierMixin, BaseEstimator):
     --------
     >>> from inne import IsolationNNE
     >>> import numpy as np
-    >>> X = X = [[-1.1], [0.3], [0.5], [100]]
+    >>> X =  [[-1.1], [0.3], [0.5], [100]]
     >>> clf = IsolationNNE().fit(X)
     >>> clf.predict([[0.1], [0], [90]])
     array([ 1,  1, -1])
     """
 
-    def __init__(self, n_estimators=200, psi="auto", contamination="auto", random_state=None):
+    def __init__(self, n_estimators=200, max_samples="auto", contamination="auto", random_state=None):
         self.n_estimators = n_estimators
-        self.psi = psi
+        self.max_samples = max_samples
         self.random_state = random_state
         self.contamination = contamination
 
@@ -90,54 +88,54 @@ class IsolationNNE(OutlierMixin, BaseEstimator):
         X = check_array(X, accept_sparse=False)
 
         n_samples = X.shape[0]
-        if isinstance(self.psi, str):
-            if self.psi == "auto":
-                psi = min(16, n_samples)
+        if isinstance(self.max_samples, str):
+            if self.max_samples == "auto":
+                max_samples = min(16, n_samples)
             else:
                 raise ValueError(
-                    "psi (%s) is not supported."
+                    "max_samples (%s) is not supported."
                     'Valid choices are: "auto", int or'
                     "float"
-                    % self.psi
+                    % self.max_samples
                 )
 
-        elif isinstance(self.psi, numbers.Integral):
-            if self.psi > n_samples:
+        elif isinstance(self.max_samples, numbers.Integral):
+            if self.max_samples > n_samples:
                 warn(
-                    "psi (%s) is greater than the "
-                    "total number of samples (%s). psi "
+                    "max_samples (%s) is greater than the "
+                    "total number of samples (%s). max_samples "
                     "will be set to n_samples for estimation."
-                    % (self.psi, n_samples)
+                    % (self.max_samples, n_samples)
                 )
-                psi = n_samples
+                max_samples = n_samples
             else:
-                psi = self.psi
+                max_samples = self.max_samples
         else:  # float
-            if not 0.0 < self.psi <= 1.0:
+            if not 0.0 < self.max_samples <= 1.0:
                 raise ValueError(
-                    "psi must be in (0, 1], got %r" % self.psi
+                    "max_samples must be in (0, 1], got %r" % self.max_samples
                 )
-            psi = int(self.psi * X.shape[0])
+            max_samples = int(self.max_samples * X.shape[0])
 
-        self.psi = psi
+        self.max_samples = max_samples
 
         if isinstance(self.random_state, numbers.Integral):
             self._seed = self.random_state
 
         for i in range(self.n_estimators):
-            center_data, center_redius, conn_redius, ratio = self._cigrid(X)
+            center_data, center_radius, conn_radius, ratio = self._cigrid(X)
             if i == 0:
                 self._center_data_set = np.array([center_data])
-                self._center_redius_set = np.array([center_redius])
-                self._conn_redius_set = np.array([conn_redius])
+                self._center_radius_set = np.array([center_radius])
+                self._conn_radius_set = np.array([conn_radius])
                 self._ratio_set = np.array([ratio])
             else:
                 self._center_data_set = np.append(
                     self._center_data_set, np.array([center_data]), axis=0)
-                self._center_redius_set = np.append(
-                    self._center_redius_set, np.array([center_redius]), axis=0)
-                self._conn_redius_set = np.append(
-                    self._conn_redius_set, np.array([conn_redius]), axis=0)
+                self._center_radius_set = np.append(
+                    self._center_radius_set, np.array([center_radius]), axis=0)
+                self._conn_radius_set = np.append(
+                    self._conn_radius_set, np.array([conn_radius]), axis=0)
                 self._ratio_set = np.append(
                     self._ratio_set, np.array([ratio]), axis=0)
         self.is_fitted_ = True
@@ -167,15 +165,15 @@ class IsolationNNE(OutlierMixin, BaseEstimator):
             self._seed = self._seed + 5
             np.random.seed(self._seed)
 
-        center_index = np.random.choice(n, self.psi, replace=False)
+        center_index = np.random.choice(n, self.max_samples, replace=False)
         center_data = X[center_index]
         center_dist = cdist(center_data, center_data, 'euclidean')
         np.fill_diagonal(center_dist, np.inf)
-        center_redius = np.amin(center_dist, axis=1)
+        center_radius = np.amin(center_dist, axis=1)
         conn_index = np.argmin(center_dist, axis=1)
-        conn_redius = center_redius[conn_index]
-        ratio = 1 - conn_redius / center_redius
-        return center_data, center_redius, conn_redius, ratio
+        conn_radius = center_radius[conn_index]
+        ratio = 1 - conn_radius / center_radius
+        return center_data, center_radius, conn_radius, ratio
 
     def predict(self, X):
         """
@@ -256,7 +254,7 @@ class IsolationNNE(OutlierMixin, BaseEstimator):
             nn_center_index = np.argmin(x_dists, axis=0)
             score = self._ratio_set[i][nn_center_index]
             score = np.where(nn_center_dist <
-                             self._center_redius_set[i][nn_center_index], score, 1)
+                             self._center_radius_set[i][nn_center_index], score, 1)
             if i == 0:
                 score_set = np.array([score])
             else:

@@ -10,9 +10,7 @@ to illustrate the ability of algorithms to cope with multimodal data.
 For each dataset, 15% of samples are generated as random uniform noise. This
 proportion is the value given to the nu parameter of the OneClassSVM and the
 contamination parameter of the other outlier detection algorithms.
-Decision boundaries between inliers and outliers are displayed in black
-except for Local Outlier Factor (LOF) as it has no predict method to be applied
-on new data when it is used for outlier detection.
+Decision boundaries between inliers and outliers are displayed in black.
 
 The :class:`~sklearn.svm.OneClassSVM` is known to be sensitive to outliers and
 thus does not perform very well for outlier detection. This estimator is best
@@ -37,13 +35,11 @@ learns an ellipse. It thus degrades when the data is not unimodal. Notice
 however that this estimator is robust to outliers.
 
 :class:`~sklearn.ensemble.IsolationForest` and
-:class:`~sklearn.neighbors.LocalOutlierFactor` seem to perform reasonably well
+:class:`inne.IsolationNNE` seem to perform reasonably well
 for multi-modal data sets. The advantage of
-:class:`~sklearn.neighbors.LocalOutlierFactor` over the other estimators is
+:class:`inne.IsolationNNE` over the other estimators is
 shown for the third data set, where the two modes have different densities.
-This advantage is explained by the local aspect of LOF, meaning that it only
-compares the score of abnormality of one sample with the scores of its
-neighbors.
+
 
 Finally, for the last data set, it is hard to say that one sample is more
 abnormal than another sample as they are uniformly distributed in a
@@ -64,6 +60,7 @@ the problem is completely unsupervised so model selection can be a challenge.
 
 # Author: Alexandre Gramfort <alexandre.gramfort@inria.fr>
 #         Albert Thomas <albert.thomas@telecom-paristech.fr>
+#         INNE is provied by Xin Han <xinhan197@gmail.com>
 # License: BSD 3 clause
 
 import time
@@ -76,12 +73,10 @@ from sklearn import svm
 from sklearn.datasets import make_moons, make_blobs
 from sklearn.covariance import EllipticEnvelope
 from sklearn.ensemble import IsolationForest
-from sklearn.neighbors import LocalOutlierFactor
 from sklearn.linear_model import SGDOneClassSVM
+from inne import IsolationNNE
 from sklearn.kernel_approximation import Nystroem
 from sklearn.pipeline import make_pipeline
-
-from inne import  IsolationNNE
 
 matplotlib.rcParams["contour.negative_linestyle"] = "solid"
 
@@ -115,12 +110,8 @@ anomaly_algorithms = [
         IsolationForest(contamination=outliers_fraction, random_state=42),
     ),
     (
-        "Local Outlier Factor",
-        LocalOutlierFactor(n_neighbors=35, contamination=outliers_fraction),
-    ),
-    (
         "Isolation NNE",
-        IsolationNNE(n_estimators=200, psi=16,contamination=outliers_fraction)
+        IsolationNNE(max_samples=10, contamination=outliers_fraction, random_state=42)
     ),
 ]
 
@@ -128,8 +119,10 @@ anomaly_algorithms = [
 blobs_params = dict(random_state=0, n_samples=n_inliers, n_features=2)
 datasets = [
     make_blobs(centers=[[0, 0], [0, 0]], cluster_std=0.5, **blobs_params)[0],
-    make_blobs(centers=[[2, 2], [-2, -2]], cluster_std=[0.5, 0.5], **blobs_params)[0],
-    make_blobs(centers=[[2, 2], [-2, -2]], cluster_std=[1.5, 0.3], **blobs_params)[0],
+    make_blobs(centers=[[2, 2], [-2, -2]],
+               cluster_std=[0.5, 0.5], **blobs_params)[0],
+    make_blobs(centers=[[2, 2], [-2, -2]],
+               cluster_std=[1.5, 0.3], **blobs_params)[0],
     4.0
     * (
         make_moons(n_samples=n_samples, noise=0.05, random_state=0)[0]
@@ -151,7 +144,8 @@ rng = np.random.RandomState(42)
 
 for i_dataset, X in enumerate(datasets):
     # Add outliers
-    X = np.concatenate([X, rng.uniform(low=-6, high=6, size=(n_outliers, 2))], axis=0)
+    X = np.concatenate(
+        [X, rng.uniform(low=-6, high=6, size=(n_outliers, 2))], axis=0)
 
     for name, algorithm in anomaly_algorithms:
         t0 = time.time()
@@ -161,17 +155,12 @@ for i_dataset, X in enumerate(datasets):
         if i_dataset == 0:
             plt.title(name, size=18)
 
-        # fit the data and tag outliers
-        if name == "Local Outlier Factor":
-            y_pred = algorithm.fit_predict(X)
-        else:
-            y_pred = algorithm.fit(X).predict(X)
+        y_pred = algorithm.fit(X).predict(X)
 
         # plot the levels lines and the points
-        if name != "Local Outlier Factor":  # LOF does not implement predict
-            Z = algorithm.predict(np.c_[xx.ravel(), yy.ravel()])
-            Z = Z.reshape(xx.shape)
-            plt.contour(xx, yy, Z, levels=[0], linewidths=2, colors="black")
+        Z = algorithm.predict(np.c_[xx.ravel(), yy.ravel()])
+        Z = Z.reshape(xx.shape)
+        plt.contour(xx, yy, Z, levels=[0], linewidths=2, colors="black")
 
         colors = np.array(["#377eb8", "#ff7f00"])
         plt.scatter(X[:, 0], X[:, 1], s=10, color=colors[(y_pred + 1) // 2])

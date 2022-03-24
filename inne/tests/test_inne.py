@@ -46,44 +46,13 @@ def test_inne():
     X_test = np.array([[2, 1], [1, 1]])
 
     grid = ParameterGrid(
-        {"n_estimators": [100, 200], "psi": [10, 20, 30]}
+        {"n_estimators": [100, 200], "max_samples": [10, 20, 30]}
     )
 
     with ignore_warnings():
         for params in grid:
             IsolationNNE(random_state=0, **
                          params).fit(X_train).predict(X_test)
-
-
-# def test_inne_sparse():
-#     """Check IForest for various parameter settings on sparse input."""
-#     rng = check_random_state(0)
-#     X_train, X_test, y_train, y_test = train_test_split(
-#         diabetes.data[:50], diabetes.target[:50], random_state=rng
-#     )
-
-#     grid = ParameterGrid(
-#         {"n_estimators": [100, 200], "psi": [10, 20, 30]}
-#     )
-
-#     for sparse_format in [csc_matrix, csr_matrix]:
-#         X_train_sparse = sparse_format(X_train)
-#         X_test_sparse = sparse_format(X_test)
-
-#         for params in grid:
-#             # Trained on sparse format
-#             sparse_classifier = IsolationNNE(
-#                 random_state=1, **params
-#             ).fit(X_train_sparse)
-#             sparse_results = sparse_classifier.predict(X_test_sparse)
-
-#             # Trained on dense format
-#             dense_classifier = IsolationNNE(
-#                 random_state=1, **params
-#             ).fit(X_train)
-#             dense_results = dense_classifier.predict(X_test)
-
-#             assert_array_equal(sparse_results, dense_results)
 
 
 def test_inne_performance():
@@ -101,7 +70,7 @@ def test_inne_performance():
     y_test = np.array([0] * 20 + [1] * 20)
 
     # fit the model
-    clf = IsolationNNE(n_estimators=100, psi=16).fit(X_train)
+    clf = IsolationNNE(n_estimators=100, max_samples=16).fit(X_train)
 
     # predict scores (the lower, the more normal)
     y_pred = -clf.decision_function(X_test)
@@ -142,36 +111,3 @@ def test_score_samples():
     assert_array_equal(
         clf1.score_samples([[2.0, 2.0]]), clf2.score_samples([[2.0, 2.0]])
     )
-
-# def test_inne_with_uniform_data():
-#     """Test whether inne predicts inliers when using uniform data"""
-
-#     # 2-d array of all 1s
-#     X = np.ones((100, 10))
-#     inne = IsolationNNE()
-#     inne.fit(X)
-
-#     rng = np.random.RandomState(0)
-
-#     assert all(inne.predict(X) == 1)
-#     assert all(inne.predict(rng.randn(100, 10)) == 1)
-#     assert all(inne.predict(X + 1) == 1)
-#     assert all(inne.predict(X - 1) == 1)
-
-#     # 2-d array where columns contain the same value across rows
-#     X = np.repeat(rng.randn(1, 10), 100, 0)
-#     inne = IsolationNNE()
-#     inne.fit(X)
-
-#     assert all(inne.predict(X) == 1)
-#     assert all(inne.predict(rng.randn(100, 10)) == 1)
-#     assert all(inne.predict(np.ones((100, 10))) == 1)
-
-#     # Single row
-#     X = rng.randn(1, 10)
-#     inne = IsolationNNE()
-#     inne.fit(X)
-
-#     assert all(inne.predict(X) == 1)
-#     assert all(inne.predict(rng.randn(100, 10)) == 1)
-#     assert all(inne.predict(np.ones((100, 10))) == 1)

@@ -1,18 +1,16 @@
 .. -*- mode: rst -*-
 
-|Travis|_ |AppVeyor|_ |Codecov|_ |CircleCI|_ |ReadTheDocs|_
+|GitHubCI|_ |Codecov|_ |CircleCI|_ |ReadTheDocs|_
 
-.. |Travis| image:: https://travis-ci.org/xhan97/inne.svg?branch=master
-.. _Travis: https://travis-ci.org/xhan97/inne
 
-.. |AppVeyor| image:: https://ci.appveyor.com/api/projects/status/coy2qqaqr1rnnt5y/branch/master?svg=true
-.. _AppVeyor: https://ci.appveyor.com/xhan97/inne
+.. |GitHubCI| image:: https://github.com/xhan97/inne/actions/workflows/inne-CI.yml/badge.svg
+.. _GithubCI: https://github.com/xhan97/inne/actions/workflows/inne-CI/
 
 .. |Codecov| image:: https://codecov.io/gh/xhan97/inne/branch/master/graph/badge.svg
 .. _Codecov: https://codecov.io/gh/xhan97/inne
 
 .. |CircleCI| image:: https://circleci.com/gh/xhan97/inne.svg?style=shield&circle-token=:circle-token
-.. _CircleCI: https://circleci.com/gh/scikit-learn-contrib/project-template/tree/master
+.. _CircleCI: https://circleci.com/gh/xhan97/tree/master
 
 .. |ReadTheDocs| image:: https://readthedocs.org/projects/inne/badge/?version=latest
 .. _ReadTheDocs: https://inne.readthedocs.io/en/latest/?badge=latest
@@ -58,17 +56,17 @@ https://inne.readthedocs.io.
 Installing
 ----------
 
-PyPI install, presuming you have an up to date pip:
+PyPI install, presuming you have an up to date pip.
 
-.. code:: bash
+.. .. code:: bash
 
-   pip install inne
+..    pip install inne
 
 For a manual install of the latest code directly from GitHub:
 
 .. code:: bash
 
-  pip install git+https://github.com/xhan97/inne.git
+    pip install git+https://github.com/xhan97/inne.git
 
 
 Alternatively download the package, install requirements, and manually run the installer:
@@ -99,7 +97,8 @@ supports input in a variety of formats: an array (or pandas dataframe) of shape 
 
     data, _ = make_blobs(1000)
 
-    clf = IsolationNNE().fit(data)
+    clf = IsolationNNE(n_estimators=200, max_samples=16)
+    clf.fit(data)
     anomaly_labels = clf.predict(data)
 
 -----------------
@@ -110,13 +109,13 @@ The package tests can be run after installation using the command:
 
 .. code:: bash
 
-    nosetests -s inne
+    pip install pytest 
 
-or, if ``nose`` is installed but ``nosetests`` is not in your ``PATH`` variable:
+or, if ``pytest`` is installed:
 
 .. code:: bash
 
-    python -m nose -s inne
+    pytest  inne/tests
 
 If one or more of the tests fail, please report a bug at https://github.com/xhan97/inne/issues
 
@@ -125,7 +124,6 @@ Python Version
 --------------
 
 Python 3  is recommend  the better option if it is available to you.
-
 
 ------
 Citing
@@ -145,6 +143,13 @@ cite it, please use the following publication (Bibtex format):
             pages={968-998},
             year={2018},
             publisher={Wiley Online Library} }
+
+------------------
+How to contribute
+------------------
+
+Thanks for your interest in contributing to inne. A guide is shown in inne's `Documentation <https://inne.readthedocs.io/en/latest/contribution.html>`__.
+
 
 License
 -------

@@ -11,7 +11,7 @@ The inne package inherits from sklearn classes, and thus drops in neatly next to
     >>> from inne import IsolationNNE
     >>> import numpy as np
     >>> X = np.array([[-1, -1], [-2, -1], [-3, -2], [0, 0], [-20, 50], [3, 5]])
-    >>> clf = IsolationNNE(n_estimators=200, psi=16)
+    >>> clf = IsolationNNE(n_estimators=200, max_samples=16)
     >>> clf.fit(X)
     >>> clf.predict(X)
 

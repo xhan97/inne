@@ -17,11 +17,11 @@ We highly encourage you to install inne in a virtual environment. We like to use
 
 Install with pip
 ================
-When you're set with your environment, run:
+.. When you're set with your environment, run:
 
-.. code-block:: bash
+.. .. code-block:: bash
 
-    pip install inne
+..     pip install inne
 
 If you're feeling brave, feel free to install the bleeding edge: NOTE: Do so at your own risk; no guarantees given!
 
