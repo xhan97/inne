@@ -6,22 +6,41 @@
 Welcome to inne's documentation!
 ============================================
 
-This project is a reference implementation to anyone who wishes to develop
-scikit-learn compatible classes.
+inne is a pure python implementation for Isolation-based anomaly detection using nearest-neighbor ensembles based on the paper:
+
+    Tharindu R., et al. `Isolation-based anomaly detection using nearest-neighbor ensembles. <https://onlinelibrary.wiley.com/doi/abs/10.1111/coin.12156>`__ Computational Intelligence (2018).
+
+The first successful isolation-based anomaly detector, ie, iForest, uses
+trees as a means to perform isolation. Although it has been shown to
+have advantages over existing anomaly detectors, we have identified 4
+weaknesses, ie, its inability to detect local anomalies, anomalies with
+a high percentage of irrelevant attributes, anomalies that are masked by
+axis-parallel clusters, and anomalies in multimodal data sets. To
+overcome these weaknesses, this paper shows that an alternative
+isolation mechanism is required and thus presents iNNE or isolation
+using Nearest Neighbor Ensemble. Although relying on nearest neighbors,
+iNNE runs significantly faster than the existing nearest neighbor-based
+methods such as the local outlier factor, especially in data sets having
+thousands of dimensions or millions of instances. This is because the
+proposed method has linear time complexity and constant space
+complexity.
+
 
 .. toctree::
    :maxdepth: 2
    :hidden:
    :caption: Getting Started
 
+   install
    quick_start
+
+
 
 .. toctree::
    :maxdepth: 2
    :hidden:
    :caption: Documentation
 
-   user_guide
    api
 
 .. toctree::
@@ -31,22 +50,21 @@ scikit-learn compatible classes.
 
    auto_examples/index
 
-`Getting started <quick_start.html>`_
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+   :caption: Contribution
+
+   contribution
+
+`Getting started <install.html>`_
 -------------------------------------
-
-Information regarding this template and how to modify it for your own project.
-
-`User Guide <user_guide.html>`_
--------------------------------
-
-An example of narrative documentation.
 
 `API Documentation <api.html>`_
 -------------------------------
 
-An example of API documentation.
-
 `Examples <auto_examples/index.html>`_
 --------------------------------------
 
-A set of examples. It complements the `User Guide <user_guide.html>`_.
+`Contribution <contribution.html>`_
+-------------------------------

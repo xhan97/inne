@@ -6,7 +6,7 @@
 User guide: create your own scikit-learn estimator
 ==================================================
 
-Estimator
+inne
 ---------
 
 The central piece of transformer, regressor, and classifier is
