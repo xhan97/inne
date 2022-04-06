@@ -8,8 +8,8 @@ import numbers
 from warnings import warn
 
 import numpy as np
-from scipy.spatial.distance import cdist
 from sklearn.base import BaseEstimator, OutlierMixin
+from sklearn.metrics import euclidean_distances
 from sklearn.utils.validation import check_array, check_is_fitted
 
 
@@ -119,25 +119,7 @@ class IsolationNNE(OutlierMixin, BaseEstimator):
 
         self.max_samples = max_samples
 
-        if isinstance(self.random_state, numbers.Integral):
-            self._seed = self.random_state
-
-        for i in range(self.n_estimators):
-            center_data, center_radius, conn_radius, ratio = self._cigrid(X)
-            if i == 0:
-                self._center_data_set = np.array([center_data])
-                self._center_radius_set = np.array([center_radius])
-                self._conn_radius_set = np.array([conn_radius])
-                self._ratio_set = np.array([ratio])
-            else:
-                self._center_data_set = np.append(
-                    self._center_data_set, np.array([center_data]), axis=0)
-                self._center_radius_set = np.append(
-                    self._center_radius_set, np.array([center_radius]), axis=0)
-                self._conn_radius_set = np.append(
-                    self._conn_radius_set, np.array([conn_radius]), axis=0)
-                self._ratio_set = np.append(
-                    self._ratio_set, np.array([ratio]), axis=0)
+        self._fit(X)
         self.is_fitted_ = True
 
         if self.contamination != "auto":
@@ -157,23 +139,31 @@ class IsolationNNE(OutlierMixin, BaseEstimator):
 
         return self
 
-    def _cigrid(self, X):
+    def _fit(self, X):
+        n, m = X.shape
+        self._center_data = np.empty(
+            [self.n_estimators, self.max_samples, m])
+        self._ratio = np.empty([self.n_estimators, self.max_samples])
+        self._center_radius = np.empty(
+            [self.n_estimators, self.max_samples])
+        for i in range(self.n_estimators):
+            if isinstance(self.random_state, numbers.Integral):
+                if i == 0:
+                    rn_seed = self.random_state
+                else:
+                    rn_seed += 5
+                np.random.seed(rn_seed)
+            center_index = np.random.choice(n, self.max_samples, replace=False)
+            self._center_data[i] = X[center_index]
+            center_dist = euclidean_distances(
+                self._center_data[i], self._center_data[i], squared=True)
+            np.fill_diagonal(center_dist, np.inf)
 
-        n = X.shape[0]
-
-        if isinstance(self.random_state, numbers.Integral):
-            self._seed = self._seed + 5
-            np.random.seed(self._seed)
-
-        center_index = np.random.choice(n, self.max_samples, replace=False)
-        center_data = X[center_index]
-        center_dist = cdist(center_data, center_data, 'euclidean')
-        np.fill_diagonal(center_dist, np.inf)
-        center_radius = np.amin(center_dist, axis=1)
-        conn_index = np.argmin(center_dist, axis=1)
-        conn_radius = center_radius[conn_index]
-        ratio = 1 - conn_radius / center_radius
-        return center_data, center_radius, conn_radius, ratio
+            self._center_radius[i] = np.amin(center_dist, axis=1)
+            conn_index = np.argmin(center_dist, axis=1)
+            conn_radius = self._center_radius[i][conn_index]
+            self._ratio[i] = 1 - conn_radius / self._center_radius[i]
+        return self
 
     def predict(self, X):
         """
@@ -196,7 +186,6 @@ class IsolationNNE(OutlierMixin, BaseEstimator):
         check_is_fitted(self)
         decision_func = self.decision_function(X)
         is_inlier = np.ones_like(decision_func, dtype=int)
-        # TODO:check the condition.
         is_inlier[decision_func < 0] = -1
         return is_inlier
 
@@ -248,18 +237,15 @@ class IsolationNNE(OutlierMixin, BaseEstimator):
         # check data
         X = check_array(X, accept_sparse=False)
 
+        score_set = np.empty([self.n_estimators, X.shape[0]])
         for i in range(self.n_estimators):
-            x_dists = cdist(self._center_data_set[i], X, 'euclidean')
+            x_dists = euclidean_distances(
+                self._center_data[i], X, squared=True)
             nn_center_dist = np.amin(x_dists, axis=0)
             nn_center_index = np.argmin(x_dists, axis=0)
-            score = self._ratio_set[i][nn_center_index]
-            score = np.where(nn_center_dist <
-                             self._center_radius_set[i][nn_center_index], score, 1)
-            if i == 0:
-                score_set = np.array([score])
-            else:
-                score_set = np.append(
-                    score_set, np.array([score]), axis=0)
+            score = self._ratio[i][nn_center_index]
+            score_set[i] = np.where(nn_center_dist <
+                                    self._center_radius[i][nn_center_index], score, 1)
         scores = np.mean(score_set, axis=0)
 
         return -scores

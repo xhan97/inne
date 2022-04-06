@@ -34,6 +34,7 @@ We use the famous
 branches.
 
 Summary of our git branching model:
+
 - Fork the desired repository on GitHub to your account;
 - Clone your forked repository locally: `git clone git@github.com:your-username:repository-name.git`;
 - Create a new branch off of `develop` with a descriptive name (for example: `feature/portuguese-sentiment-analysis`, `hotfix/bug-on-downloader`). You can do it by switching to `develop` branch (`git checkout develop`) and then creating a new branch (`git checkout -b name-of-the-new-branch`);
@@ -52,6 +53,12 @@ Tips
 - Avoid using `git commit -a` unless you know what you're doing;
 - Check every change with `git diff` before adding then to the index (stage area) and with `git diff --cached` before commiting;
 - If you have push access to the main repository, please do not commit directly to `dev`: your access should be used only to accept pull requests; if you want to make a new feature, you should use the same process as other developers so that your code can be reviewed.
+
+
+Documentation Guidelines
+------------------------
+
+
 
 
 Code Guidelines
