@@ -10,7 +10,7 @@ Your first step is to install inne, which comes bundled as a pip package.
 
 
 Virtual Environment
-==================
+===================
 
 We highly encourage you to install inne in a virtual environment. We like to use `Anaconda <https://docs.anaconda.com/anaconda/user-guide/getting-started/>`__ to manage our Python virtual environments.
 

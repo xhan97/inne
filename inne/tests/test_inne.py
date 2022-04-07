@@ -2,26 +2,21 @@
 """Tests for `inne` package."""
 
 import time
+from unittest.mock import Mock, patch
 
 import numpy as np
 import pytest
 from inne import IsolationNNE
-from numpy.testing import assert_allclose, assert_array_equal
-from sklearn.datasets import load_iris, make_blobs, make_moons
-
-from sklearn.utils._testing import assert_array_equal
-from sklearn.utils._testing import assert_array_almost_equal
-from sklearn.utils._testing import ignore_warnings
-from sklearn.utils._testing import assert_allclose
-
-from sklearn.model_selection import ParameterGrid
-from sklearn.model_selection import train_test_split
-from sklearn.datasets import load_diabetes, load_iris
-from sklearn.utils import check_random_state
-from sklearn.metrics import roc_auc_score
-
 from scipy.sparse import csc_matrix, csr_matrix
-from unittest.mock import Mock, patch
+from sklearn.datasets import (load_diabetes, load_digits, load_iris,
+                              make_blobs, make_moons)
+from sklearn.metrics import roc_auc_score
+from sklearn.model_selection import ParameterGrid, train_test_split
+from sklearn.utils import check_random_state
+from sklearn.utils._testing import (assert_allclose, assert_array_almost_equal,
+                                    assert_array_equal, ignore_warnings)
+
+from sklearn.ensemble import IsolationForest
 
 rng = check_random_state(0)
 
@@ -40,8 +35,16 @@ diabetes.data = diabetes.data[perm]
 diabetes.target = diabetes.target[perm]
 
 
+# also load the digits dataset
+# and randomly permute it
+digit = load_diabetes()
+perm = rng.permutation(digit.target.size)
+digit.data = digit.data[perm]
+digit.target = digit.target[perm]
+
+
 def test_inne():
-    """Check Isolation Forest for various parameter settings."""
+    """Check Isolation NNE for various parameter settings."""
     X_train = np.array([[0, 1], [1, 2]])
     X_test = np.array([[2, 1], [1, 1]])
 
@@ -56,7 +59,7 @@ def test_inne():
 
 
 def test_inne_performance():
-    """Test Isolation Forest performs well"""
+    """Test Isolation NNE performs well"""
 
     # Generate train/test data
     rng = check_random_state(2)
@@ -111,3 +114,25 @@ def test_score_samples():
     assert_array_equal(
         clf1.score_samples([[2.0, 2.0]]), clf2.score_samples([[2.0, 2.0]])
     )
+
+
+def test_fit_time():
+    data = digit.data
+    print(data.shape)
+    clf = IsolationNNE(n_estimators=200, max_samples=256)
+    t1 = time.time()
+    clf.fit(data)
+    t2 = time.time()
+    anomaly_labels = clf.predict(data)
+    t3 = time.time()
+    print(t2-t1)
+    print(t3-t2)
+    
+    clf2 = IsolationForest(n_estimators=200, max_samples=256)
+    t1 = time.time()
+    clf2.fit(data)
+    t2 = time.time()
+    anomaly_labels = clf2.predict(data)
+    t3 = time.time()
+    print(t2-t1)
+    print(t3-t2)

@@ -111,9 +111,11 @@ anomaly_algorithms = [
     ),
     (
         "Isolation NNE",
-        IsolationNNE(max_samples=10, contamination=outliers_fraction, random_state=42)
+        IsolationNNE(max_samples=10,
+                     contamination=outliers_fraction, random_state=42)
     ),
 ]
+
 
 # Define datasets
 blobs_params = dict(random_state=0, n_samples=n_inliers, n_features=2)
