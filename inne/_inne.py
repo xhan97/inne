@@ -141,10 +141,10 @@ class IsolationNNE(OutlierMixin, BaseEstimator):
 
     def _fit(self, X):
         n, m = X.shape
-        self._center_data = np.empty(
+        self._centroids = np.empty(
             [self.n_estimators, self.max_samples, m])
         self._ratio = np.empty([self.n_estimators, self.max_samples])
-        self._center_radius = np.empty(
+        self._centroids_radius = np.empty(
             [self.n_estimators, self.max_samples])
         for i in range(self.n_estimators):
             if isinstance(self.random_state, numbers.Integral):
@@ -154,15 +154,15 @@ class IsolationNNE(OutlierMixin, BaseEstimator):
                     rn_seed += 5
                 np.random.seed(rn_seed)
             center_index = np.random.choice(n, self.max_samples, replace=False)
-            self._center_data[i] = X[center_index]
+            self._centroids[i] = X[center_index]
             center_dist = euclidean_distances(
-                self._center_data[i], self._center_data[i], squared=True)
+                self._centroids[i], self._centroids[i], squared=True)
             np.fill_diagonal(center_dist, np.inf)
 
-            self._center_radius[i] = np.amin(center_dist, axis=1)
+            self._centroids_radius[i] = np.amin(center_dist, axis=1)
             conn_index = np.argmin(center_dist, axis=1)
-            conn_radius = self._center_radius[i][conn_index]
-            self._ratio[i] = 1 - conn_radius / self._center_radius[i]
+            conn_radius = self._centroids_radius[i][conn_index]
+            self._ratio[i] = 1 - conn_radius / self._centroids_radius[i]
         return self
 
     def predict(self, X):
@@ -240,12 +240,12 @@ class IsolationNNE(OutlierMixin, BaseEstimator):
         score_set = np.empty([self.n_estimators, X.shape[0]])
         for i in range(self.n_estimators):
             x_dists = euclidean_distances(
-                self._center_data[i], X, squared=True)
+                self._centroids[i], X, squared=True)
             nn_center_dist = np.amin(x_dists, axis=0)
             nn_center_index = np.argmin(x_dists, axis=0)
             score = self._ratio[i][nn_center_index]
             score_set[i] = np.where(nn_center_dist <
-                                    self._center_radius[i][nn_center_index], score, 1)
+                                    self._centroids_radius[i][nn_center_index], score, 1)
         scores = np.mean(score_set, axis=0)
 
         return -scores

@@ -1,10 +1,13 @@
 .. -*- mode: rst -*-
 
-|GitHubCI|_ |Codecov|_ |CircleCI|_ |ReadTheDocs|_
+|PyPI|_ |ReadTheDocs|_ |Downloads|_ |GitHubCI|_  |Codecov|_ |CircleCI|_ 
 
 
 .. |GitHubCI| image:: https://github.com/xhan97/inne/actions/workflows/inne-CI.yml/badge.svg
 .. _GithubCI: https://github.com/xhan97/inne/actions/workflows/inne-CI/
+
+.. |PyPI| image:: https://badge.fury.io/py/inne.svg
+.. _PyPI: https://badge.fury.io/py/inne
 
 .. |Codecov| image:: https://codecov.io/gh/xhan97/inne/branch/master/graph/badge.svg
 .. _Codecov: https://codecov.io/gh/xhan97/inne
@@ -14,6 +17,10 @@
 
 .. |ReadTheDocs| image:: https://readthedocs.org/projects/inne/badge/?version=latest
 .. _ReadTheDocs: https://inne.readthedocs.io/en/latest/?badge=latest
+
+.. |Downloads| image:: https://pepy.tech/badge/inne
+.. _Downloads: https://pepy.tech/project/inne
+
 
 iNNE
 ======================================================================
@@ -58,9 +65,9 @@ Installing
 
 PyPI install, presuming you have an up to date pip.
 
-.. .. code:: bash
+.. code:: bash
 
-..    pip install inne
+   pip install inne
 
 For a manual install of the latest code directly from GitHub:
 
