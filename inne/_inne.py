@@ -165,6 +165,7 @@ class IsolationNNE(OutlierMixin, BaseEstimator):
             rnd = check_random_state(self._seeds[i])
             center_index = rnd.choice(
                 n_samples, self.max_samples_, replace=False)
+
             self._centroids[i] = X[center_index]
             center_dist = euclidean_distances(
                 self._centroids[i], self._centroids[i], squared=True)
@@ -174,8 +175,9 @@ class IsolationNNE(OutlierMixin, BaseEstimator):
             # Nearest Neighbors of centroids
             cnn_index = np.argmin(center_dist, axis=1)
             cnn_radius = self._centroids_radius[i][cnn_index]
-
+            
             self._ratio[i] = 1 - cnn_radius / self._centroids_radius[i]
+
         return self
 
     def predict(self, X):
