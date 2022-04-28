@@ -119,7 +119,7 @@ def test_score_samples():
 def test_fit_time():
     data = digit.data
     print(data.shape)
-    clf = IsolationNNE(n_estimators=200, max_samples=256)
+    clf = IsolationNNE(n_estimators=200, max_samples=100)
     t1 = time.time()
     clf.fit(data)
     t2 = time.time()
@@ -127,7 +127,7 @@ def test_fit_time():
     t3 = time.time()
     print(t2-t1)
     print(t3-t2)
-    
+
     clf2 = IsolationForest(n_estimators=200, max_samples=256)
     t1 = time.time()
     clf2.fit(data)
