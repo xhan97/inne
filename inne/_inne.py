@@ -6,12 +6,10 @@
 
 import numbers
 from warnings import warn
-
 import numpy as np
 from sklearn.base import BaseEstimator, OutlierMixin
 from sklearn.metrics import euclidean_distances
 from sklearn.utils.validation import check_is_fitted, check_random_state
-from sklearn.utils.random import sample_without_replacement
 
 MAX_INT = np.iinfo(np.int32).max
 
@@ -97,6 +95,8 @@ class IsolationNNE(OutlierMixin, BaseEstimator):
 
         # Check data
         X = self._validate_data(X, accept_sparse=False)
+        # Remove repeat rows
+        X = np.unique(X, axis=0)
 
         n_samples = X.shape[0]
         if isinstance(self.max_samples, str):
@@ -175,7 +175,7 @@ class IsolationNNE(OutlierMixin, BaseEstimator):
             # Nearest Neighbors of centroids
             cnn_index = np.argmin(center_dist, axis=1)
             cnn_radius = self._centroids_radius[i][cnn_index]
-            
+
             self._ratio[i] = 1 - cnn_radius / self._centroids_radius[i]
 
         return self
