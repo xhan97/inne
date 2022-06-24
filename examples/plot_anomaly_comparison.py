@@ -111,7 +111,7 @@ anomaly_algorithms = [
     ),
     (
         "Isolation NNE",
-        IsolationNNE(max_samples=16,
+        IsolationNNE(max_samples=12,
                      contamination=outliers_fraction, random_state=42)
     ),
 ]
