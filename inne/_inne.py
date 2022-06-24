@@ -177,7 +177,7 @@ class IsolationNNE(OutlierMixin, BaseEstimator):
 
             self._ratio[i] = 1 - (cnn_radius + MIN_FLOAT) / \
                 (self._centroids_radius[i] + MIN_FLOAT)
-
+            
         return self
 
     def predict(self, X):
