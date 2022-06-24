@@ -12,6 +12,7 @@ from sklearn.metrics import euclidean_distances
 from sklearn.utils.validation import check_is_fitted, check_random_state
 
 MAX_INT = np.iinfo(np.int32).max
+MIN_FLOAT = np.finfo(float).eps
 
 
 class IsolationNNE(OutlierMixin, BaseEstimator):
@@ -95,8 +96,6 @@ class IsolationNNE(OutlierMixin, BaseEstimator):
 
         # Check data
         X = self._validate_data(X, accept_sparse=False)
-        # Remove repeat rows
-        X = np.unique(X, axis=0)
 
         n_samples = X.shape[0]
         if isinstance(self.max_samples, str):
@@ -176,7 +175,8 @@ class IsolationNNE(OutlierMixin, BaseEstimator):
             cnn_index = np.argmin(center_dist, axis=1)
             cnn_radius = self._centroids_radius[i][cnn_index]
 
-            self._ratio[i] = 1 - cnn_radius / self._centroids_radius[i]
+            self._ratio[i] = 1 - (cnn_radius + MIN_FLOAT) / \
+                (self._centroids_radius[i] + MIN_FLOAT)
 
         return self
 
