@@ -18,7 +18,7 @@
 .. |ReadTheDocs| image:: https://readthedocs.org/projects/inne/badge/?version=latest
 .. _ReadTheDocs: https://inne.readthedocs.io/en/latest/?badge=latest
 
-.. |Downloads| image:: https://pepy.tech/badge/inne
+.. |Downloads| image:: https://static.pepy.tech/badge/inne
 .. _Downloads: https://pepy.tech/project/inne
 
 
